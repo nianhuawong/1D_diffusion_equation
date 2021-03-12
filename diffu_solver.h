@@ -31,4 +31,4 @@ void output_residual();
 void output_results();
 
 void generate_grid_1D(int numberOfGridPoints);
-void solve_chase_method(double d1, double dm, std::vector<double>& uj);
+void solve_chase_method(vector<double>& djv);

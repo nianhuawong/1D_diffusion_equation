@@ -90,32 +90,40 @@ void time_marching_full_implicit()
 	b = 1.0 + 2.0 * sigma;
 	c = -sigma;
 
+	double u0 = qField[0];
 	double u1 = qField[1];
-	double d1 = u1 - a * qField[0];
+	double d1 = u1 - a * u0;
 
-	double um = qField[numberOfGridPoints - 2];
-	double dm = um - c * qField[numberOfGridPoints-1];
+	double um   = qField[numberOfEquations];
+	double ump1 = qField[numberOfEquations + 1];
+	double dm   = um - c * ump1;
 	
-	vector<double> uj(numberOfEquations);
-	for (int iEquation = 1; iEquation < numberOfEquations; ++iEquation)
+	vector<double> djv(numberOfEquations);
+	djv[0] = d1;
+	djv[numberOfEquations - 1] = dm;
+
+	for (int iEquation = 1; iEquation < numberOfEquations-1; ++iEquation)
 	{
-		uj[iEquation] = qField[iEquation];
+		djv[iEquation] = qField[iEquation];
 	}
 	
-	solve_chase_method(d1,dm,uj);
+	solve_chase_method(djv);
 }
 
-void solve_chase_method(double d1, double dm, vector<double>& uj)
+void solve_chase_method(vector<double>& djv)
 {
 	vector< double > AA(numberOfEquations);
 	vector< double > BB(numberOfEquations);
+
+	double d1 = djv[0];
+	double dm = djv[numberOfEquations-1];
 
 	AA[0] = -c / b;
 	BB[0] = d1 / b;
 
 	for (int iEquation = 1; iEquation < numberOfEquations; ++iEquation)
 	{
-		double dj = uj[iEquation];
+		double dj = djv[iEquation];
 
 		double tmp = b + a * AA[iEquation - 1];
 		AA[iEquation] = -c / tmp;
@@ -124,9 +132,9 @@ void solve_chase_method(double d1, double dm, vector<double>& uj)
 
 	qField_N1[numberOfEquations] = (dm - a * BB[numberOfEquations - 1]) / (b + a * AA[numberOfEquations - 1]);
 
-	for (int iEquation = numberOfEquations - 1; iEquation >= 1; --iEquation)
+	for (int iEquation = numberOfEquations; iEquation >1; --iEquation)
 	{
-		qField_N1[iEquation] = AA[iEquation] * qField_N1[iEquation + 1] + BB[iEquation];
+		qField_N1[iEquation-1] = AA[iEquation-1] * qField_N1[iEquation] + BB[iEquation-1];
 	}
 }
 
@@ -136,19 +144,24 @@ void time_marching_Crank_Nicolson()
 	b = -1.0 - sigma;
 	c = a;
 
+	double u0 = qField[0];
 	double u1 = -qField[1] - 0.5 * sigma * (qField[2] - 2.0 * qField[1] + qField[0]);
-	double d1 = u1 - a * qField[0];
+	double d1 = u1 - a * u0;
 
-	double um = -qField[numberOfGridPoints - 2] - 0.5 * sigma * (qField[numberOfGridPoints - 1] - 2.0 * qField[numberOfGridPoints - 2] + qField[numberOfGridPoints - 3]);
-	double dm = um - c * qField[numberOfGridPoints - 1];
+	double um   = -qField[numberOfEquations] - 0.5 * sigma * (qField[numberOfEquations+1] - 2.0 * qField[numberOfEquations] + qField[numberOfEquations-1]);
+	double ump1 = qField[numberOfEquations + 1];
+	double dm   = um - c * ump1;
 
-	vector<double> uj(numberOfEquations);
-	for (int iEquation = 1; iEquation < numberOfEquations; ++iEquation)
+	vector<double> djv(numberOfEquations);
+	djv[0] = d1;
+	djv[numberOfEquations - 1] = dm;
+
+	for (int iEquation = 1; iEquation < numberOfEquations-1; ++iEquation)
 	{
-		uj[iEquation] = -qField[iEquation] - 0.5 * sigma * (qField[iEquation + 1] - 2.0 * qField[iEquation] + qField[iEquation - 1]);
+		djv[iEquation] = -qField[iEquation] - 0.5 * sigma * (qField[iEquation + 1] - 2.0 * qField[iEquation] + qField[iEquation - 1]);
 	}
 
-	solve_chase_method(d1, dm, uj);
+	solve_chase_method(djv);
 }
 
 void boundary_condition()
@@ -178,11 +191,7 @@ void initialize_parameter()
 	cin >> totalTime;
 	cout << "totalTime = " << totalTime << endl;
 
-
 	generate_grid_1D( numberOfGridPoints );
-	double startCoord = 0.0;
-	double endCoord = 1.0;
-	ds = (endCoord - startCoord) / (numberOfGridPoints - 1);
 
 	int iter_min = int( 200 * beta / ds / ds );
 
@@ -202,7 +211,7 @@ void generate_grid_1D( int numberOfGridPoints )
 {
 	double startCoord = 0.0; 
 	double endCoord = 1.0;
-	double ds = ( endCoord - startCoord ) / ( numberOfGridPoints - 1 );
+	ds = ( endCoord - startCoord ) / ( numberOfGridPoints - 1 );
 
 	xCoordinates.resize(numberOfGridPoints);
 	for (int iNode = 0; iNode < numberOfGridPoints; ++iNode)
