@@ -25,7 +25,9 @@ vector<double> xCoordinates;
 void initialize_parameter();
 void flow_initialization();
 void load_qField();
-void time_marching();
+void time_marching_FTCS();
+void time_marching_full_implicit();
+void time_marching_Crank_Nicolson();
 void boundary_condition();
 void compute_residual();
 void output_residual();
@@ -43,7 +45,9 @@ int main()
 	{
 		load_qField();
 
-		time_marching();
+		//time_marching_FTCS();
+		time_marching_full_implicit();
+		//time_marching_Crank_Nicolson
 
 		boundary_condition();
 
@@ -101,12 +105,46 @@ void compute_residual()
 	residual = sqrt(residual / numberOfGridPoints);  //L2
 }
 
-void time_marching()
+void time_marching_FTCS()
 {	
 	//FTCS
 	for (int iNode = 1; iNode < numberOfGridPoints - 1; ++iNode)
 	{
 		qField_N1[iNode] = qField[iNode] + sigma * (qField[iNode+1]- 2.0 * qField[iNode] + qField[iNode-1]);
+	}
+}
+
+void time_marching_full_implicit()
+{
+	double a = - sigma; 
+	double b = 1.0 + 2.0 * sigma;
+	double c = - sigma;
+	//m+2个网格点，只有m个方程
+	int numberOfEquations = numberOfGridPoints - 2;  //代数方程个数
+
+	double d1 = qField[1] - a * qField[0];
+	double dm = qField[numberOfGridPoints - 2] - c * qField[numberOfGridPoints-1];
+
+	vector< double > AA(numberOfEquations);
+	vector< double > BB(numberOfEquations);
+
+	AA[0]= -c / b;
+	BB[0] = d1 / b;
+	
+	for (int iEquation = 1; iEquation < numberOfEquations; ++iEquation)
+	{
+		double dj = qField[iEquation];
+
+		double tmp = b + a * AA[iEquation - 1];
+		AA[iEquation] = - c / tmp;
+		BB[iEquation] = (dj - a * BB[iEquation - 1]) / tmp;
+	}
+	
+	qField_N1[numberOfEquations] = (dm - a * BB[numberOfEquations - 1]) / (b + a * AA[numberOfEquations - 1]);
+
+	for (int iEquation = numberOfEquations-1; iEquation >= 1; --iEquation)
+	{
+		qField_N1[iEquation] = AA[iEquation] * qField_N1[iEquation+1] + BB[iEquation];
 	}
 }
 
@@ -143,7 +181,7 @@ void initialize_parameter()
 	double endCoord = 1.0;
 	ds = (endCoord - startCoord) / (numberOfGridPoints - 1);
 
-	int iter_min = 200 * beta / ds / ds;
+	int iter_min = int( 200 * beta / ds / ds );
 
 	cout << "Enter number of time steps..." << "iter > " << iter_min << endl;
 	cin >> numberOfTimeSteps;
