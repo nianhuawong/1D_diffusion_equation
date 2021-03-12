@@ -1,39 +1,9 @@
-//#include "./diffu_solver.h"
 #include<iostream>
 #include<vector>
 #include<fstream>
 
 using namespace std;
-
-const double beta = 1.43e-3;
-
-int iter;
-int numberOfGridPoints;
-int numberOfTimeSteps;
-
-double totalTime;
-double dt;
-double ds;
-double sigma;
-
-vector<double> qField;
-vector<double> qField_N1;
-double residual;
-
-vector<double> xCoordinates;
-
-void initialize_parameter();
-void flow_initialization();
-void load_qField();
-void time_marching_FTCS();
-void time_marching_full_implicit();
-void time_marching_Crank_Nicolson();
-void boundary_condition();
-void compute_residual();
-void output_residual();
-void output_results();
-
-void generate_grid_1D(int numberOfGridPoints);
+#include "diffu_solver.h"
 
 int main()
 {
@@ -47,7 +17,7 @@ int main()
 
 		//time_marching_FTCS();
 		time_marching_full_implicit();
-		//time_marching_Crank_Nicolson
+		//time_marching_Crank_Nicolson(); 
 
 		boundary_condition();
 
@@ -116,36 +86,69 @@ void time_marching_FTCS()
 
 void time_marching_full_implicit()
 {
-	double a = - sigma; 
-	double b = 1.0 + 2.0 * sigma;
-	double c = - sigma;
-	//m+2个网格点，只有m个方程
-	int numberOfEquations = numberOfGridPoints - 2;  //代数方程个数
+	a = -sigma;
+	b = 1.0 + 2.0 * sigma;
+	c = -sigma;
 
-	double d1 = qField[1] - a * qField[0];
-	double dm = qField[numberOfGridPoints - 2] - c * qField[numberOfGridPoints-1];
+	double u1 = qField[1];
+	double d1 = u1 - a * qField[0];
 
+	double um = qField[numberOfGridPoints - 2];
+	double dm = um - c * qField[numberOfGridPoints-1];
+	
+	vector<double> uj(numberOfEquations);
+	for (int iEquation = 1; iEquation < numberOfEquations; ++iEquation)
+	{
+		uj[iEquation] = qField[iEquation];
+	}
+	
+	solve_chase_method(d1,dm,uj);
+}
+
+void solve_chase_method(double d1, double dm, vector<double>& uj)
+{
 	vector< double > AA(numberOfEquations);
 	vector< double > BB(numberOfEquations);
 
-	AA[0]= -c / b;
+	AA[0] = -c / b;
 	BB[0] = d1 / b;
-	
+
 	for (int iEquation = 1; iEquation < numberOfEquations; ++iEquation)
 	{
-		double dj = qField[iEquation];
+		double dj = uj[iEquation];
 
 		double tmp = b + a * AA[iEquation - 1];
-		AA[iEquation] = - c / tmp;
+		AA[iEquation] = -c / tmp;
 		BB[iEquation] = (dj - a * BB[iEquation - 1]) / tmp;
 	}
-	
+
 	qField_N1[numberOfEquations] = (dm - a * BB[numberOfEquations - 1]) / (b + a * AA[numberOfEquations - 1]);
 
-	for (int iEquation = numberOfEquations-1; iEquation >= 1; --iEquation)
+	for (int iEquation = numberOfEquations - 1; iEquation >= 1; --iEquation)
 	{
-		qField_N1[iEquation] = AA[iEquation] * qField_N1[iEquation+1] + BB[iEquation];
+		qField_N1[iEquation] = AA[iEquation] * qField_N1[iEquation + 1] + BB[iEquation];
 	}
+}
+
+void time_marching_Crank_Nicolson()
+{
+	a = 0.5 * sigma;
+	b = -1.0 - sigma;
+	c = a;
+
+	double u1 = -qField[1] - 0.5 * sigma * (qField[2] - 2.0 * qField[1] + qField[0]);
+	double d1 = u1 - a * qField[0];
+
+	double um = -qField[numberOfGridPoints - 2] - 0.5 * sigma * (qField[numberOfGridPoints - 1] - 2.0 * qField[numberOfGridPoints - 2] + qField[numberOfGridPoints - 3]);
+	double dm = um - c * qField[numberOfGridPoints - 1];
+
+	vector<double> uj(numberOfEquations);
+	for (int iEquation = 1; iEquation < numberOfEquations; ++iEquation)
+	{
+		uj[iEquation] = -qField[iEquation] - 0.5 * sigma * (qField[iEquation + 1] - 2.0 * qField[iEquation] + qField[iEquation - 1]);
+	}
+
+	solve_chase_method(d1, dm, uj);
 }
 
 void boundary_condition()
@@ -191,6 +194,8 @@ void initialize_parameter()
 	sigma = beta * dt / ds / ds;
 	cout << "sigma = " << sigma << endl;
 
+	//m+2个网格点，只有m个方程
+	numberOfEquations = numberOfGridPoints - 2;  //隐式格式代数方程个数
 }
 
 void generate_grid_1D( int numberOfGridPoints )
