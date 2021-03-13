@@ -21,8 +21,8 @@ int main()
 		load_qField();
 
 		//time_marching_FTCS();
-		time_marching_full_implicit();
-		//time_marching_Crank_Nicolson(); 
+		//time_marching_full_implicit();
+		time_marching_Crank_Nicolson(); 
 
 		boundary_condition();
 
@@ -123,7 +123,7 @@ void time_marching_full_implicit()
 
 void solve_chase_method(double a, double b, double c, vector<double>& djv, vector<double>& solution)
 {
-	int  numberOfEquations = djv.size();
+	int  numberOfEquations = int( djv.size() );
 	vector< double > AA(numberOfEquations);
 	vector< double > BB(numberOfEquations);
 
