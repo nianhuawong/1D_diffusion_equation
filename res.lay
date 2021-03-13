@@ -108,6 +108,7 @@ $!LineMap  [1]
     {
     Color = Red
     FillColor = Red
+    LineThickness = 0.4
     }
   BarCharts
     {
@@ -132,8 +133,13 @@ $!LineMap  [2]
     }
   Symbols
     {
-    Color = Red
+    SymbolShape
+      {
+      GeomShape = Grad
+      }
+    Color = Green
     FillColor = Red
+    LineThickness = 0.4
     }
   BarCharts
     {
@@ -160,6 +166,8 @@ $!XYLineAxis
     RangeMax = 100.01000000000001
     GRSpacing = 20
     }
+$!LinePlotLayers 
+  ShowSymbols = Yes
 $!FrameControl ActivateByNumber
   Frame = 1
 $!SetStyleBase Config

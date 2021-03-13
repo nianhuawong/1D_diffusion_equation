@@ -93,7 +93,10 @@ void time_marching_full_implicit()
 	double u0   = qField[0];
 	double rhs1 = qField[1];
 	double d1   = rhs1 - a * u0;
-
+	if (u0!= 100)
+	{
+		int kkk = 1;
+	}
 	double rhsm = qField[numberOfEquations];
 	double ump1 = qField[numberOfEquations + 1];
 	double dm   = rhsm - c * ump1;
@@ -110,33 +113,89 @@ void time_marching_full_implicit()
 	solve_chase_method(djv);
 }
 
+//void solve_chase_method(vector<double>& djv)
+//{
+//	vector< double > AA(numberOfEquations);
+//	vector< double > BB(numberOfEquations);
+//
+//	double d1 = djv[0];
+//	double dm = djv[numberOfEquations-1];
+//
+//	AA[0] = -c / b;
+//	BB[0] = d1 / b;
+//
+//	for (int iEquation = 1; iEquation < numberOfEquations; ++iEquation)
+//	{
+//		double dj = djv[iEquation];
+//
+//		double tmp = b + a * AA[iEquation - 1];
+//		AA[iEquation] = -c / tmp;
+//		BB[iEquation] = (dj - a * BB[iEquation - 1]) / tmp;
+//	}
+//
+//	qField_N1[numberOfEquations] = (dm - a * BB[numberOfEquations - 1]) / (b + a * AA[numberOfEquations - 1]);
+//
+//	for (int iEquation = numberOfEquations; iEquation >1; --iEquation)
+//	{
+//		qField_N1[iEquation-1] = AA[iEquation-1] * qField_N1[iEquation] + BB[iEquation-1];
+//	}
+//}
+
 void solve_chase_method(vector<double>& djv)
 {
+	vector<double> qField_tmp(numberOfEquations);
+
 	vector< double > AA(numberOfEquations);
 	vector< double > BB(numberOfEquations);
-
-	double d1 = djv[0];
-	double dm = djv[numberOfEquations-1];
-
-	AA[0] = -c / b;
-	BB[0] = d1 / b;
-
-	for (int iEquation = 1; iEquation < numberOfEquations; ++iEquation)
+	vector< double > CC(numberOfEquations);
+	for (int iEquation = 0; iEquation < numberOfEquations; ++iEquation)
 	{
-		double dj = djv[iEquation];
-
-		double tmp = b + a * AA[iEquation - 1];
-		AA[iEquation] = -c / tmp;
-		BB[iEquation] = (dj - a * BB[iEquation - 1]) / tmp;
+		AA[iEquation] = a;
+		BB[iEquation] = b;
+		CC[iEquation] = c;
 	}
 
-	qField_N1[numberOfEquations] = (dm - a * BB[numberOfEquations - 1]) / (b + a * AA[numberOfEquations - 1]);
-
-	for (int iEquation = numberOfEquations; iEquation >1; --iEquation)
+	for (int iEquation = 1; iEquation < numberOfEquations; iEquation++)
 	{
-		qField_N1[iEquation-1] = AA[iEquation-1] * qField_N1[iEquation] + BB[iEquation-1];
+		double tmp = AA[iEquation] / BB[iEquation - 1];
+
+		BB[iEquation]  = BB[iEquation]  - tmp * CC[iEquation - 1];
+		djv[iEquation] = djv[iEquation] - tmp * djv[iEquation - 1];
+	}
+
+	qField_tmp[numberOfEquations - 1] = djv[numberOfEquations - 1] / BB[numberOfEquations - 1];
+
+	for (int iEquation = numberOfEquations - 2; iEquation >= 0; iEquation--)
+	{
+		qField_tmp[iEquation] = ( djv[iEquation] - CC[iEquation]  * qField_tmp[iEquation+1] )/ BB[iEquation];
+	}
+
+	for (int iEquation = 0; iEquation < numberOfEquations; ++iEquation)
+	{
+		qField_N1[iEquation + 1] = qField_tmp[iEquation];
 	}
 }
+
+////forward elimination
+//
+//for (i = 1; i < r; i++)
+//{
+//	m = A[i][i - 1] / A[i - 1][i - 1];
+//	A[i][i] = A[i][i] - (m * A[i - 1][i]);
+//	B[i] = B[i] - (m * B[i - 1]);
+//}
+//
+////backward substitution
+//
+//X[r - 1] = B[r - 1] / A[r - 1][r - 1];
+//
+//for (i = r - 2; i >= 0; i--)
+//{
+//	X[i] = (B[i] - A[i][i + 1] * X[i + 1]) / A[i][i];
+//}
+//printf("\nSolution of X is:\n");
+//for (i = 0; i < r; i++)
+//printf("%4.2f\n", X[i]);
 
 void time_marching_Crank_Nicolson()
 {
