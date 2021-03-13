@@ -31,4 +31,4 @@ void output_residual();
 void output_results();
 
 void generate_grid_1D(int numberOfGridPoints);
-void solve_chase_method(double a, double b, double c, vector<double>& VD, vector<double>& solution);
+void solve_TDMA_method(double a, double b, double c, vector<double>& VD, vector<double>& solution);

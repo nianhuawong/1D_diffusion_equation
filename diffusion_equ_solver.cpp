@@ -121,7 +121,7 @@ void time_marching_full_implicit()
 	}
 }
 
-void solve_chase_method(double a, double b, double c, vector<double>& djv, vector<double>& solution)
+void solve_TDMA_method(double a, double b, double c, vector<double>& djv, vector<double>& solution)
 {
 	int  numberOfEquations = int( djv.size() );
 	vector< double > AA(numberOfEquations);
@@ -149,7 +149,7 @@ void solve_chase_method(double a, double b, double c, vector<double>& djv, vecto
 	}
 }
 
-//void solve_chase_method(double a, double b, double c, vector<double>& VD, vector<double>& solution)
+//void solve_TDMA_method(double a, double b, double c, vector<double>& VD, vector<double>& solution)
 //{
 //	int  numberOfEquations = VD.size();
 //
