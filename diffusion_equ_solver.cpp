@@ -90,13 +90,13 @@ void time_marching_full_implicit()
 	b = 1.0 + 2.0 * sigma;
 	c = -sigma;
 
-	double u0 = qField[0];
-	double u1 = qField[1];
-	double d1 = u1 - a * u0;
+	double u0   = qField[0];
+	double rhs1 = qField[1];
+	double d1   = rhs1 - a * u0;
 
-	double um   = qField[numberOfEquations];
+	double rhsm = qField[numberOfEquations];
 	double ump1 = qField[numberOfEquations + 1];
-	double dm   = um - c * ump1;
+	double dm   = rhsm - c * ump1;
 	
 	vector<double> djv(numberOfEquations);
 	djv[0] = d1;
@@ -145,12 +145,18 @@ void time_marching_Crank_Nicolson()
 	c = a;
 
 	double u0 = qField[0];
-	double u1 = -qField[1] - 0.5 * sigma * (qField[2] - 2.0 * qField[1] + qField[0]);
-	double d1 = u1 - a * u0;
+	double u1 = qField[1];
+	double u2 = qField[2];
 
-	double um   = -qField[numberOfEquations] - 0.5 * sigma * (qField[numberOfEquations+1] - 2.0 * qField[numberOfEquations] + qField[numberOfEquations-1]);
+	double rhs1 = - u1 - 0.5 * sigma * (u2 - 2.0 * u1 + u0);
+	double d1   = rhs1 - a * u0;
+
+	double um   = qField[numberOfEquations];
+	double umm1 = qField[numberOfEquations - 1];
 	double ump1 = qField[numberOfEquations + 1];
-	double dm   = um - c * ump1;
+
+	double rhsm = - um - 0.5 * sigma * (ump1 - 2.0 * um + umm1);
+	double dm   = rhsm - c * ump1;
 
 	vector<double> djv(numberOfEquations);
 	djv[0] = d1;
@@ -158,7 +164,10 @@ void time_marching_Crank_Nicolson()
 
 	for (int iEquation = 1; iEquation < numberOfEquations-1; ++iEquation)
 	{
-		djv[iEquation] = -qField[iEquation] - 0.5 * sigma * (qField[iEquation + 1] - 2.0 * qField[iEquation] + qField[iEquation - 1]);
+		double u0 = qField[iEquation - 1];
+		double u1 = qField[iEquation    ];
+		double u2 = qField[iEquation + 1];
+		djv[iEquation] = - u1 - 0.5 * sigma * ( u2 - 2.0 * u1 + u0 );
 	}
 
 	solve_chase_method(djv);
@@ -193,7 +202,7 @@ void initialize_parameter()
 
 	generate_grid_1D( numberOfGridPoints );
 
-	int iter_min = int( 200 * beta / ds / ds );
+	int iter_min = int( 2.0 * totalTime * beta / ds / ds );
 
 	cout << "Enter number of time steps..." << "iter > " << iter_min << endl;
 	cin >> numberOfTimeSteps;
