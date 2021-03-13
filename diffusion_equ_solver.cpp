@@ -7,10 +7,10 @@ using namespace std;
 
 int main()
 {
-	//double a = 1, b = 2, c = 3;
-	//vector<double> djv = { 1, 2, 3 };
+	//double a = 1, b = 2, c = 3;			//A={1,2,3}, {3,2,5}//b={1,2,3}
+	//vector<double> djv = { 1, 2, 3 };		//x={-4,3,0}, {-0.8462,0.5385,0.6923}
 	//vector<double> solution(3);
-	//solve_chase_method(a, b, c, djv,solution);
+	//solve_TDMA_method(a, b, c, djv,solution);
 	
 	initialize_parameter();
 
@@ -113,7 +113,7 @@ void time_marching_full_implicit()
 	}
 
 	vector<double> solution(numberOfEquations);
-	solve_chase_method(a, b, c, djv, solution);
+	solve_TDMA_method(a, b, c, djv, solution);
 
 	for (int iEquation = 0; iEquation < numberOfEquations; ++iEquation)
 	{
@@ -212,7 +212,7 @@ void time_marching_Crank_Nicolson()
 	}
 
 	vector<double> solution(numberOfEquations);
-	solve_chase_method(a, b, c, djv,solution);
+	solve_TDMA_method(a, b, c, djv,solution);
 
 	for (int iEquation = 0; iEquation < numberOfEquations; ++iEquation)
 	{
