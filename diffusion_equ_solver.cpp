@@ -6,12 +6,13 @@ using namespace std;
 #include "diffu_solver.h"
 
 int main()
-{
+{	
+	//验证三对角矩阵追赶法求解是否正确
 	//double a = 1, b = 2, c = 3;			//A={1,2,3}, {3,2,5}//b={1,2,3}
-	//vector<double> djv = { 1, 2, 3 };		//x={-4,3,0}, {-0.8462,0.5385,0.6923}
+	//vector<double> d = { 1, 2, 3 };		//x={-4,3,0}, {-0.8462,0.5385,0.6923}
 	//vector<double> solution(3);
-	//solve_TDMA_method(a, b, c, djv,solution);
-	
+	//solve_TDMA_method(a, b, c, d, solution);
+
 	initialize_parameter();
 
 	flow_initialization();
@@ -20,9 +21,10 @@ int main()
 	{
 		load_qField();
 
+		time_marching();
 		//time_marching_FTCS();
 		//time_marching_full_implicit();
-		time_marching_Crank_Nicolson(); 
+		//time_marching_Crank_Nicolson(); 
 
 		boundary_condition();
 
@@ -111,7 +113,7 @@ void time_marching_full_implicit()
 
 	for (int iEquation = 1; iEquation < numberOfEquations-1; ++iEquation)
 	{
-		djv[iEquation] = qField[iEquation+1];//这个地方是iEquation+1，找了好久才找到这个Bug，:(
+		djv[iEquation] = qField[iEquation+1];//这个地方是iEquation+1，找了好久才找到这个Bug:(，仔细看公式下标
 	}
 
 	vector<double> solution(numberOfEquations);
@@ -123,6 +125,7 @@ void time_marching_full_implicit()
 	}
 }
 
+//求解三对角矩阵的追赶法，Tri-Diagonal Matrix Algorithm, 参考中科院教材做法
 void solve_TDMA_method(double a, double b, double c, vector<double>& djv, vector<double>& solution)
 {
 	int  numberOfEquations = int( djv.size() );
@@ -151,35 +154,35 @@ void solve_TDMA_method(double a, double b, double c, vector<double>& djv, vector
 	}
 }
 
-//void solve_TDMA_method(double a, double b, double c, vector<double>& VD, vector<double>& solution)
-//{
-//	int  numberOfEquations = VD.size();
-//
-//	vector< double > VA(numberOfEquations);
-//	vector< double > VB(numberOfEquations);
-//	vector< double > VC(numberOfEquations);
-//	for (int iEquation = 0; iEquation < numberOfEquations; ++iEquation)
-//	{
-//		VA[iEquation] = a;
-//		VB[iEquation] = b;
-//		VC[iEquation] = c;
-//	}
-//	for (int iEquation = 1; iEquation < numberOfEquations; iEquation++)
-//	{
-//		double tmp = VA[iEquation] / VB[iEquation - 1];
-//
-//		VB[iEquation] = VB[iEquation] - tmp * VC[iEquation - 1];
-//		VD[iEquation] = VD[iEquation] - tmp * VD[iEquation - 1];
-//	}
-//
-//	solution[numberOfEquations - 1] = VD[numberOfEquations - 1] / VB[numberOfEquations - 1];
-//
-//	for (int iEquation = numberOfEquations - 2; iEquation >= 0; iEquation--)
-//	{
-//		solution[iEquation] = ( VD[iEquation] - VC[iEquation]  * solution[iEquation+1] )/ VB[iEquation];
-//	}
-//
-//}
+//求解三对角矩阵的追赶法，Tri-Diagonal Matrix Algorithm, 参考网络开源代码
+void solve_TDMA_method_version2(double a, double b, double c, vector<double>& VD, vector<double>& solution)
+{
+	int  numberOfEquations = int( VD.size() );
+
+	vector< double > VA(numberOfEquations);
+	vector< double > VB(numberOfEquations);
+	vector< double > VC(numberOfEquations);
+	for (int iEquation = 0; iEquation < numberOfEquations; ++iEquation)
+	{
+		VA[iEquation] = a;
+		VB[iEquation] = b;
+		VC[iEquation] = c;
+	}
+	for (int iEquation = 1; iEquation < numberOfEquations; iEquation++)
+	{
+		double tmp = VA[iEquation] / VB[iEquation - 1];
+
+		VB[iEquation] = VB[iEquation] - tmp * VC[iEquation - 1];
+		VD[iEquation] = VD[iEquation] - tmp * VD[iEquation - 1];
+	}
+
+	solution[numberOfEquations - 1] = VD[numberOfEquations - 1] / VB[numberOfEquations - 1];
+
+	for (int iEquation = numberOfEquations - 2; iEquation >= 0; iEquation--)
+	{
+		solution[iEquation] = ( VD[iEquation] - VC[iEquation]  * solution[iEquation+1] )/ VB[iEquation];
+	}
+}
 
 void time_marching_Crank_Nicolson()
 {
@@ -207,8 +210,8 @@ void time_marching_Crank_Nicolson()
 
 	for (int iEquation = 1; iEquation < numberOfEquations-1; ++iEquation)
 	{
-		double u0 = qField[iEquation ];
-		double u1 = qField[iEquation + 1];
+		double u0 = qField[iEquation ];		
+		double u1 = qField[iEquation + 1];		//注意此处下标，仔细对照公式
 		double u2 = qField[iEquation + 2];
 		djv[iEquation] = - u1 - 0.5 * sigma * ( u2 - 2.0 * u1 + u0 );
 	}
@@ -242,18 +245,20 @@ void flow_initialization()
 void initialize_parameter()
 {		
 	cout << "Enter number of grid points..." << endl;
-	//cin >> numberOfGridPoints;
+	cin >> numberOfGridPoints;
 	cout << "numberOfGridPoints = " << numberOfGridPoints << endl;
 
 	cout << "Enter totalTime..." << endl;
-	//cin >> totalTime;
+	cin >> totalTime;
 	cout << "totalTime = " << totalTime << endl;
+
+	set_time_march_method();
 
 	generate_grid_1D( numberOfGridPoints );
 
 	int iter_min = int( 2.0 * totalTime * beta / ds / ds );
 
-	cout << "Enter number of time steps..." << "iter > " << iter_min << endl;
+	cout << "Enter number of time steps..." << "for FTCS, iter > " << iter_min << endl;
 	cin >> numberOfTimeSteps;
 	cout << "numberOfTimeSteps = " << numberOfTimeSteps << endl;
 
@@ -265,6 +270,33 @@ void initialize_parameter()
 	numberOfEquations = numberOfGridPoints - 2;  //隐式格式代数方程个数
 }
 
+void set_time_march_method()
+{
+	cout << "1--FTCS;\t2--fully implict;\t3--Crank_Nicolson, please choose!" << endl;
+	int time_march_method;
+	cin >> time_march_method;
+
+	if (time_march_method == 1)
+	{
+		time_marching = &time_marching_FTCS;
+		cout << "time marching method is FTCS!" << endl;
+	}
+	else if (time_march_method == 2)
+	{
+		time_marching = &time_marching_full_implicit;
+		cout << "time marching method is fully implict!" << endl;
+	}
+	else if (time_march_method == 3)
+	{
+		time_marching = &time_marching_Crank_Nicolson;
+		cout << "time marching method is Crank_Nicolson!" << endl;
+	}
+	else
+	{
+		cout << "invalid time marching method, program ends!" << endl;
+		exit(1);
+	}
+}
 void generate_grid_1D( int numberOfGridPoints )
 {
 	double startCoord = 0.0; 
