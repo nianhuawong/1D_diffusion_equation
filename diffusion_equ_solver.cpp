@@ -21,8 +21,8 @@ int main()
 		load_qField();
 
 		//time_marching_FTCS();
-		time_marching_full_implicit();
-		//time_marching_Crank_Nicolson(); 
+		//time_marching_full_implicit();
+		time_marching_Crank_Nicolson(); 
 
 		boundary_condition();
 
@@ -207,9 +207,9 @@ void time_marching_Crank_Nicolson()
 
 	for (int iEquation = 1; iEquation < numberOfEquations-1; ++iEquation)
 	{
-		double u0 = qField[iEquation - 1];
-		double u1 = qField[iEquation    ];
-		double u2 = qField[iEquation + 1];
+		double u0 = qField[iEquation ];
+		double u1 = qField[iEquation + 1];
+		double u2 = qField[iEquation + 2];
 		djv[iEquation] = - u1 - 0.5 * sigma * ( u2 - 2.0 * u1 + u0 );
 	}
 
