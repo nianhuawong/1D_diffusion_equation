@@ -29,6 +29,8 @@ int main()
 		compute_residual();
 
 		output_residual();
+
+		physicalTime += dt;
 	}
 
 	output_results();
@@ -68,7 +70,6 @@ void output_residual()
 void load_qField()
 {
 	qField = qField_N1;
-	physicalTime = iter * dt;
 }
 
 void compute_residual()
@@ -110,7 +111,7 @@ void time_marching_full_implicit()
 
 	for (int iEquation = 1; iEquation < numberOfEquations-1; ++iEquation)
 	{
-		djv[iEquation] = qField[iEquation];
+		djv[iEquation] = qField[iEquation+1];//这个地方是iEquation+1，找了好久才找到这个Bug，:(
 	}
 
 	vector<double> solution(numberOfEquations);

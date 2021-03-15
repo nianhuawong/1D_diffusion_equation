@@ -107,6 +107,7 @@ $!LineMap  [1]
   Lines
     {
     Color = Red
+    LineThickness = 0.4
     }
   Symbols
     {
@@ -134,6 +135,8 @@ $!LineMap  [2]
   Lines
     {
     Color = Green
+    LinePattern = Dashed
+    LineThickness = 0.4
     }
   Symbols
     {
@@ -170,8 +173,6 @@ $!XYLineAxis
     RangeMax = 100.01000000000001
     GRSpacing = 20
     }
-$!LinePlotLayers 
-  ShowSymbols = Yes
 $!FrameControl ActivateByNumber
   Frame = 1
 $!SetStyleBase Config

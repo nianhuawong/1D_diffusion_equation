@@ -12,7 +12,7 @@ double a, b, c;
 double dt;
 double ds;
 double sigma;
-double physicalTime; 
+double physicalTime = 0; 
 
 double residual;
 
