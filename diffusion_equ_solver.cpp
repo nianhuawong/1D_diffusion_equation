@@ -21,8 +21,8 @@ int main()
 		load_qField();
 
 		//time_marching_FTCS();
-		//time_marching_full_implicit();
-		time_marching_Crank_Nicolson(); 
+		time_marching_full_implicit();
+		//time_marching_Crank_Nicolson(); 
 
 		boundary_condition();
 
@@ -68,6 +68,7 @@ void output_residual()
 void load_qField()
 {
 	qField = qField_N1;
+	physicalTime = iter * dt;
 }
 
 void compute_residual()
@@ -240,11 +241,11 @@ void flow_initialization()
 void initialize_parameter()
 {		
 	cout << "Enter number of grid points..." << endl;
-	cin >> numberOfGridPoints;
+	//cin >> numberOfGridPoints;
 	cout << "numberOfGridPoints = " << numberOfGridPoints << endl;
 
 	cout << "Enter totalTime..." << endl;
-	cin >> totalTime;
+	//cin >> totalTime;
 	cout << "totalTime = " << totalTime << endl;
 
 	generate_grid_1D( numberOfGridPoints );

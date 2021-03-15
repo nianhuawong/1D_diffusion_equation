@@ -86,10 +86,14 @@ $!GlobalLinePlot
   Legend
     {
     Show = Yes
+    Box
+      {
+      BoxType = None
+      }
     XYPos
       {
-      X = 88.975
-      Y = 83.222
+      X = 53.419
+      Y = 28.222
       }
     }
 $!LineMap  [1]

@@ -1,17 +1,18 @@
 #pragma once
-
+const int numberOfGridPoints = 51;
 const double beta = 1.43e-3;
-
+const double totalTime = 100;
 int iter;
-int numberOfGridPoints;
+//int numberOfGridPoints;
 int numberOfTimeSteps;
 int numberOfEquations;
 
 double a, b, c;
-double totalTime;
+//double totalTime;
 double dt;
 double ds;
 double sigma;
+double physicalTime; 
 
 double residual;
 
