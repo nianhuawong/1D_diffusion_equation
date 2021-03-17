@@ -14,6 +14,7 @@ double sigma;
 double physicalTime = 0; 
 
 double residual;
+string outFile;
 
 vector< double > qField;
 vector< double > qField_N1;
@@ -34,7 +35,7 @@ void time_marching_Crank_Nicolson();
 void boundary_condition();
 void compute_residual();
 void output_residual();
-void output_results();
+void output_results(string outFile);
 
 void generate_grid_1D(int numberOfGridPoints);
 void solve_TDMA_method(double a, double b, double c, vector<double>& VD, vector<double>& solution);

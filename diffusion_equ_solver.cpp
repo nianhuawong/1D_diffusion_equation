@@ -1,4 +1,5 @@
 #include<iostream>
+#include<iomanip>
 #include<vector>
 #include<fstream>
 
@@ -35,20 +36,23 @@ int main()
 		physicalTime += dt;
 	}
 
-	output_results();
+	output_results(outFile);
 
 	return 0;
 }
 
-void output_results()
+void output_results(string outFile)
 {
 	cout << "dumping results..." << endl;
 	fstream file;
-	file.open("results.dat", ios_base::out );
+	file.open(outFile, ios_base::out );
 
 	file << "TITLE     = \"results\"" << endl;
 	file << "VARIABLES = \"x\", \"qField\"" << endl;
 
+	file << setiosflags(ios::right);
+//	file << setiosflags(ios::scientific);
+	file << setprecision(8);
 	for (int iNode = 0; iNode < numberOfGridPoints; ++iNode)
 	{
 		file << xCoordinates[iNode] << "\t" << qField_N1[iNode] << endl;
@@ -60,8 +64,8 @@ void output_results()
 }
 
 void output_residual()
-{
-	if (iter % 10 == 0)
+{	
+	if (iter % 1000 == 0)
 	{
 		cout << "\titer " << "\tresidual" << endl;
 	}
@@ -280,16 +284,19 @@ void set_time_march_method()
 	{
 		time_marching = &time_marching_FTCS;
 		cout << "time marching method is FTCS!" << endl;
+		outFile = "results-explicit.dat";
 	}
 	else if (time_march_method == 2)
 	{
 		time_marching = &time_marching_full_implicit;
 		cout << "time marching method is fully implict!" << endl;
+		outFile = "results-full.dat";
 	}
 	else if (time_march_method == 3)
 	{
 		time_marching = &time_marching_Crank_Nicolson;
 		cout << "time marching method is Crank_Nicolson!" << endl;
+		outFile = "results-CN.dat";
 	}
 	else
 	{
@@ -297,6 +304,7 @@ void set_time_march_method()
 		exit(1);
 	}
 }
+
 void generate_grid_1D( int numberOfGridPoints )
 {
 	double startCoord = 0.0; 
